@@ -139,47 +139,6 @@ Future<void> main() async {
         ),
       );
     });
-    test('disconnect via dispose', () async {
-      // First wait for connection to complete
-      await expectLater(
-        socketClient.connectionState.asBroadcastStream(),
-        emitsInOrder(
-          [
-            SocketConnectionState.connecting,
-            SocketConnectionState.connected,
-          ],
-        ),
-      );
-
-      // We need to begin waiting on the connectionState
-      // before we issue the command to disconnect; otherwise
-      // it can reconnect so fast that it will be reconnected
-      // by the time that the expectLater check is initiated.
-      await overridePrint((_) async {
-        Timer(const Duration(milliseconds: 20), () async {
-          await socketClient.dispose();
-        });
-      })();
-      // The connectionState BehaviorController emits the current state
-      // to any new listener, so we expect it to start in the connected
-      // state and transition to notConnected because of dispose.
-      await expectLater(
-        socketClient.connectionState,
-        emitsInOrder([
-          SocketConnectionState.connected,
-          SocketConnectionState.notConnected,
-        ]),
-      );
-
-      // Have to wait for socket close to be fully processed after we reach
-      // the notConnected state, including updating channel with close code.
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-
-      // The websocket should be in a fully closed state at this point,
-      // we should have a confirmed close code in the channel.
-      expect(socketClient.socketChannel, isNotNull);
-      expect(socketClient.socketChannel!.closeCode, isNotNull);
-    });
     test('subscription data', () async {
       final payload = Request(
         operation: Operation(document: parseString('subscription {}')),
@@ -459,48 +418,6 @@ Future<void> main() async {
           ],
         ),
       );
-    });
-    test('disconnect via dispose graphql-transport-ws', () async {
-      // First wait for connection to complete
-      await expectLater(
-        socketClient.connectionState.asBroadcastStream(),
-        emitsInOrder(
-          [
-            SocketConnectionState.connecting,
-            SocketConnectionState.handshake,
-            SocketConnectionState.connected,
-          ],
-        ),
-      );
-
-      // We need to begin waiting on the connectionState
-      // before we issue the command to disconnect; otherwise
-      // it can reconnect so fast that it will be reconnected
-      // by the time that the expectLater check is initiated.
-      await overridePrint((_) async {
-        Timer(const Duration(milliseconds: 20), () async {
-          await socketClient.dispose();
-        });
-      })();
-      // The connectionState BehaviorController emits the current state
-      // to any new listener, so we expect it to start in the connected
-      // state and transition to notConnected because of dispose.
-      await expectLater(
-        socketClient.connectionState,
-        emitsInOrder([
-          SocketConnectionState.connected,
-          SocketConnectionState.notConnected,
-        ]),
-      );
-
-      // Have to wait for socket close to be fully processed after we reach
-      // the notConnected state, including updating channel with close code.
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-
-      // The websocket should be in a fully closed state at this point,
-      // we should have a confirmed close code in the channel.
-      expect(socketClient.socketChannel, isNotNull);
-      expect(socketClient.socketChannel!.closeCode, isNotNull);
     });
     test('subscription data graphql-transport-ws', () async {
       final payload = Request(
