@@ -35,7 +35,7 @@ class QueryManager {
     this.alwaysRebroadcast = false,
     DeepEqualsFn? deepEquals,
     bool deduplicatePollers = false,
-    this.requestTimeout = const Duration(seconds: 5),
+    this.requestTimeout = const Duration(seconds: 120),
   }) {
     scheduler = QueryScheduler(
       queryManager: this,
